@@ -76,6 +76,8 @@ defs = Definitions(
 
 ### With dbt
 
+Supported for: Databricks, Redshift, PostgreSQL, Azure Synapse, Azure SQL, MySQL, Trino, and Athena
+
 ```python
 from dagster_dbt import DbtCliResource, dbt_assets
 from dagster_insights import dbt_with_databricks_insights
@@ -85,6 +87,15 @@ def my_dbt_assets(context, dbt: DbtCliResource):
     dbt_cli_invocation = dbt.cli(["build"], context=context)
     yield from dbt_with_databricks_insights(context, dbt_cli_invocation)
 ```
+
+For other databases, use the corresponding wrapper function:
+- `dbt_with_redshift_insights`
+- `dbt_with_postgresql_insights`
+- `dbt_with_synapse_insights`
+- `dbt_with_azuresql_insights`
+- `dbt_with_mysql_insights`
+- `dbt_with_trino_insights`
+- `dbt_with_athena_insights`
 
 ### Storage Cost Tracking
 
@@ -146,14 +157,14 @@ These track costs as operations execute:
 | Redshift | `InsightsRedshiftResource` | ✅ |
 | PostgreSQL | `InsightsPostgreSQLResource` | ✅ |
 | Azure Synapse | `InsightsSynapseResource` | ✅ |
-| Azure SQL | `InsightsAzureSQLResource` | ❌ |
-| MySQL | `InsightsMySQLResource` | ❌ |
-| Trino | `InsightsTrinoResource` | ❌ |
+| Azure SQL | `InsightsAzureSQLResource` | ✅ |
+| MySQL | `InsightsMySQLResource` | ✅ |
+| Trino | `InsightsTrinoResource` | ✅ |
 | AWS Glue | `InsightsGlueResource` | ❌ |
 | Azure Data Factory | `InsightsDataFactoryResource` | ❌ |
 | AWS EMR | `InsightsEMRResource` | ❌ |
 | GCP Dataproc | `InsightsDataprocResource` | ❌ |
-| AWS Athena | `InsightsAthenaResource` | ❌ |
+| AWS Athena | `InsightsAthenaResource` | ✅ |
 | AWS RDS | `InsightsRDSResource` | ❌ |
 | GCP Cloud SQL | `InsightsCloudSQLResource` | ❌ |
 | Azure Database | `InsightsAzureDatabaseResource` | ❌ |
