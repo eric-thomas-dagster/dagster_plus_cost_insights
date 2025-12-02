@@ -80,10 +80,16 @@ except ImportError:
     pass
 
 # Azure SQL Database imports
-dagster_azure_sql_req_imports = {"InsightsAzureSQLResource"}
+dagster_azure_sql_req_imports = {
+    "InsightsAzureSQLResource",
+    "dbt_with_azuresql_insights",
+}
 try:
     from dagster_insights.azure.sql.insights_azuresql_resource import (
         InsightsAzureSQLResource as InsightsAzureSQLResource,
+    )
+    from dagster_insights.azure.sql.dbt_wrapper import (
+        dbt_with_azuresql_insights as dbt_with_azuresql_insights,
     )
 except ImportError:
     pass
@@ -104,10 +110,16 @@ except ImportError:
     pass
 
 # MySQL imports
-dagster_mysql_req_imports = {"InsightsMySQLResource"}
+dagster_mysql_req_imports = {
+    "InsightsMySQLResource",
+    "dbt_with_mysql_insights",
+}
 try:
     from dagster_insights.mysql.insights_mysql_resource import (
         InsightsMySQLResource as InsightsMySQLResource,
+    )
+    from dagster_insights.mysql.dbt_wrapper import (
+        dbt_with_mysql_insights as dbt_with_mysql_insights,
     )
 except ImportError:
     pass
@@ -131,10 +143,16 @@ except ImportError:
     pass
 
 # Trino imports
-dagster_trino_req_imports = {"InsightsTrinoResource"}
+dagster_trino_req_imports = {
+    "InsightsTrinoResource",
+    "dbt_with_trino_insights",
+}
 try:
     from dagster_insights.trino.insights_trino_resource import (
         InsightsTrinoResource as InsightsTrinoResource,
+    )
+    from dagster_insights.trino.dbt_wrapper import (
+        dbt_with_trino_insights as dbt_with_trino_insights,
     )
 except ImportError:
     pass
@@ -158,10 +176,16 @@ except ImportError:
     pass
 
 # AWS Athena imports
-dagster_athena_req_imports = {"InsightsAthenaResource"}
+dagster_athena_req_imports = {
+    "InsightsAthenaResource",
+    "dbt_with_athena_insights",
+}
 try:
     from dagster_insights.aws.athena.insights_athena_resource import (
         InsightsAthenaResource as InsightsAthenaResource,
+    )
+    from dagster_insights.aws.athena.dbt_wrapper import (
+        dbt_with_athena_insights as dbt_with_athena_insights,
     )
 except ImportError:
     pass
