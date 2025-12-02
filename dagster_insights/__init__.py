@@ -191,28 +191,46 @@ except ImportError:
     pass
 
 # AWS RDS imports
-dagster_rds_req_imports = {"InsightsRDSResource"}
+dagster_rds_req_imports = {
+    "InsightsRDSResource",
+    "dbt_with_rds_insights",
+}
 try:
     from dagster_insights.aws.rds.insights_rds_resource import (
         InsightsRDSResource as InsightsRDSResource,
+    )
+    from dagster_insights.aws.rds.dbt_wrapper import (
+        dbt_with_rds_insights as dbt_with_rds_insights,
     )
 except ImportError:
     pass
 
 # GCP Cloud SQL imports
-dagster_cloud_sql_req_imports = {"InsightsCloudSQLResource"}
+dagster_cloud_sql_req_imports = {
+    "InsightsCloudSQLResource",
+    "dbt_with_cloud_sql_insights",
+}
 try:
     from dagster_insights.gcp.cloud_sql.insights_cloud_sql_resource import (
         InsightsCloudSQLResource as InsightsCloudSQLResource,
+    )
+    from dagster_insights.gcp.cloud_sql.dbt_wrapper import (
+        dbt_with_cloud_sql_insights as dbt_with_cloud_sql_insights,
     )
 except ImportError:
     pass
 
 # Azure Database imports
-dagster_azure_database_req_imports = {"InsightsAzureDatabaseResource"}
+dagster_azure_database_req_imports = {
+    "InsightsAzureDatabaseResource",
+    "dbt_with_azure_database_insights",
+}
 try:
     from dagster_insights.azure.database.insights_azure_database_resource import (
         InsightsAzureDatabaseResource as InsightsAzureDatabaseResource,
+    )
+    from dagster_insights.azure.database.dbt_wrapper import (
+        dbt_with_azure_database_insights as dbt_with_azure_database_insights,
     )
 except ImportError:
     pass

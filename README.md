@@ -76,7 +76,7 @@ defs = Definitions(
 
 ### With dbt
 
-Supported for: Databricks, Redshift, PostgreSQL, Azure Synapse, Azure SQL, MySQL, Trino, and Athena
+Supported for: Databricks, Redshift, PostgreSQL, Azure Synapse, Azure SQL, MySQL, Trino, Athena, AWS RDS, GCP Cloud SQL, and Azure Database
 
 ```python
 from dagster_dbt import DbtCliResource, dbt_assets
@@ -96,6 +96,9 @@ For other databases, use the corresponding wrapper function:
 - `dbt_with_mysql_insights`
 - `dbt_with_trino_insights`
 - `dbt_with_athena_insights`
+- `dbt_with_rds_insights` (AWS RDS - PostgreSQL or MySQL)
+- `dbt_with_cloud_sql_insights` (GCP Cloud SQL - PostgreSQL or MySQL)
+- `dbt_with_azure_database_insights` (Azure Database - PostgreSQL or MySQL)
 
 ### Storage Cost Tracking
 
@@ -165,9 +168,9 @@ These track costs as operations execute:
 | AWS EMR | `InsightsEMRResource` | ❌ |
 | GCP Dataproc | `InsightsDataprocResource` | ❌ |
 | AWS Athena | `InsightsAthenaResource` | ✅ |
-| AWS RDS | `InsightsRDSResource` | ❌ |
-| GCP Cloud SQL | `InsightsCloudSQLResource` | ❌ |
-| Azure Database | `InsightsAzureDatabaseResource` | ❌ |
+| AWS RDS | `InsightsRDSResource` | ✅ |
+| GCP Cloud SQL | `InsightsCloudSQLResource` | ✅ |
+| Azure Database | `InsightsAzureDatabaseResource` | ✅ |
 
 ### Scheduled Tracking (Storage Sources)
 
