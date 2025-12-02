@@ -1,0 +1,171 @@
+[build-system]
+requires = ["setuptools>=45", "wheel", "setuptools_scm>=6.2"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "dagster-insights"
+version = "0.1.0"
+description = "Extended cost insights integrations for Dagster+, supporting Databricks, Redshift, S3, and more"
+readme = "README.md"
+requires-python = ">=3.8"
+license = {text = "Apache-2.0"}
+authors = [
+    {name = "Dagster Labs", email = "hello@dagster.io"}
+]
+keywords = ["dagster", "dagster-plus", "cost", "insights", "databricks", "redshift", "aws", "azure", "gcp"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: Apache Software License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+]
+
+dependencies = [
+    "dagster>=1.5.0",
+]
+
+[project.optional-dependencies]
+# Data warehouses
+databricks = [
+    "databricks-sdk>=0.12.0",
+    "databricks-sql-connector>=2.9.0",
+]
+redshift = [
+    "psycopg2-binary>=2.9.0",
+]
+postgresql = [
+    "psycopg2-binary>=2.9.0",
+]
+mysql = [
+    "pymysql>=1.0.0",
+]
+trino = [
+    "trino>=0.321.0",
+]
+
+# Azure
+azure-synapse = [
+    "pyodbc>=4.0.0",
+    "azure-identity>=1.12.0",
+]
+azure-sql = [
+    "pyodbc>=4.0.0",
+    "azure-identity>=1.12.0",
+]
+azure-data-factory = [
+    "azure-mgmt-datafactory>=2.0.0",
+    "azure-identity>=1.12.0",
+]
+azure-storage = [
+    "azure-mgmt-costmanagement>=4.0.0",
+    "azure-identity>=1.12.0",
+]
+azure-database = [
+    "azure-mgmt-rdbms>=10.0.0",
+    "azure-identity>=1.12.0",
+    "pyodbc>=4.0.0",
+]
+
+# AWS
+aws = [
+    "boto3>=1.26.0",
+]
+glue = [
+    "boto3>=1.26.0",
+]
+athena = [
+    "boto3>=1.26.0",
+]
+rds = [
+    "boto3>=1.26.0",
+    "psycopg2-binary>=2.9.0",  # or pymysql for MySQL
+]
+
+# GCP
+gcs = [
+    "google-cloud-billing>=1.11.0",
+]
+cloud-sql = [
+    "google-cloud-sql-admin>=1.0.0",
+    "psycopg2-binary>=2.9.0",  # or pymysql for MySQL
+]
+dataproc = [
+    "google-cloud-dataproc>=5.0.0",
+]
+
+# Spark
+emr = [
+    "boto3>=1.26.0",
+]
+
+# dbt integration
+dbt = [
+    "dagster-dbt>=0.21.0",
+]
+
+# Storage
+storage = [
+    "boto3>=1.26.0",  # S3
+    "google-cloud-billing>=1.11.0",  # GCS
+    "azure-mgmt-costmanagement>=4.0.0",  # Azure
+    "azure-identity>=1.12.0",
+]
+
+# Install everything
+all = [
+    "databricks-sdk>=0.12.0",
+    "databricks-sql-connector>=2.9.0",
+    "psycopg2-binary>=2.9.0",
+    "pymysql>=1.0.0",
+    "trino>=0.321.0",
+    "pyodbc>=4.0.0",
+    "boto3>=1.26.0",
+    "azure-mgmt-datafactory>=2.0.0",
+    "azure-mgmt-costmanagement>=4.0.0",
+    "azure-mgmt-rdbms>=10.0.0",
+    "azure-identity>=1.12.0",
+    "google-cloud-billing>=1.11.0",
+    "google-cloud-dataproc>=5.0.0",
+    "google-cloud-sql-admin>=1.0.0",
+    "dagster-dbt>=0.21.0",
+]
+
+# Development dependencies
+dev = [
+    "pytest>=7.0.0",
+    "pytest-cov>=4.0.0",
+    "black>=23.0.0",
+    "ruff>=0.1.0",
+    "mypy>=1.0.0",
+]
+
+[project.urls]
+Homepage = "https://github.com/eric-thomas-dagster/dagster_plus_cost_insights"
+Documentation = "https://github.com/eric-thomas-dagster/dagster_plus_cost_insights#readme"
+Repository = "https://github.com/eric-thomas-dagster/dagster_plus_cost_insights"
+"Bug Tracker" = "https://github.com/eric-thomas-dagster/dagster_plus_cost_insights/issues"
+
+[tool.setuptools]
+packages = ["dagster_insights"]
+
+[tool.setuptools.package-data]
+dagster_insights = ["py.typed"]
+
+[tool.black]
+line-length = 100
+target-version = ['py38']
+
+[tool.ruff]
+line-length = 100
+target-version = "py38"
+
+[tool.mypy]
+python_version = "3.8"
+warn_return_any = true
+warn_unused_configs = true
+disallow_untyped_defs = false
