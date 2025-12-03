@@ -153,9 +153,42 @@ defs = Definitions(
 )
 ```
 
-### Database Cost Tracking (PostgreSQL, RDS, Cloud SQL, Azure Database)
+### Database Cost Tracking (PostgreSQL, RDS, Cloud SQL, Azure Database, Neon)
 
 For databases that don't have built-in cost tracking (unlike Snowflake/BigQuery), use scheduled cost ingestion:
+
+**For Neon (serverless PostgreSQL with Compute Units):**
+
+```python
+from dagster import Definitions, EnvVar
+from dagster_insights import (
+    InsightsPostgreSQLResource,
+    create_neon_insights_asset_and_schedule,
+)
+
+# Neon uses Compute Units (CU) - automatically calculates cost
+neon_insights = create_neon_insights_asset_and_schedule(
+    start_date="2025-01-01",
+    compute_units=0.25,  # Free tier: 0.25 CU shared compute
+    pricing_tier="launch",  # "launch" ($0.106/CU-hr) or "scale" ($0.222/CU-hr)
+)
+
+defs = Definitions(
+    assets=[*your_assets, *neon_insights.assets],
+    schedules=[neon_insights.schedule],
+    resources={
+        "postgres": InsightsPostgreSQLResource(
+            host=EnvVar("NEON_HOST"),
+            database=EnvVar("NEON_DATABASE"),
+            user=EnvVar("NEON_USER"),
+            password=EnvVar("NEON_PASSWORD"),
+            enable_cost_tracking=True,
+        )
+    },
+)
+```
+
+**For traditional PostgreSQL (RDS, Cloud SQL, Azure Database, self-hosted):**
 
 ```python
 from dagster import Definitions, EnvVar
@@ -192,13 +225,17 @@ defs = Definitions(
 3. Costs are calculated based on execution time × your instance's hourly cost
 4. Data is submitted to Dagster+ Insights API via `put_cost_information()`
 
-**Finding your hourly cost:**
+**Finding your cost:**
+- **Neon:** [Neon Pricing](https://neon.com/pricing) - Uses Compute Units (CU)
+  - Free tier: 0.25 CU → $0.0265/hour
+  - Launch 1 CU: $0.106/hour
+  - Scale 4 CU: $0.888/hour
 - **AWS RDS:** [RDS Pricing](https://aws.amazon.com/rds/pricing/) (e.g., db.t3.medium = $0.068/hour)
 - **GCP Cloud SQL:** [Cloud SQL Pricing](https://cloud.google.com/sql/pricing) (e.g., db-n1-standard-1 = $0.096/hour)
 - **Azure Database:** [Azure Database Pricing](https://azure.microsoft.com/en-us/pricing/details/postgresql/) (e.g., GP_Gen5_2 = $0.228/hour)
 - **Self-hosted:** Monthly infrastructure cost ÷ 730 hours
 
-See `examples/postgresql_cost_tracking.py` for a complete example with multiple databases.
+See `examples/neon_cost_tracking.py` and `examples/postgresql_cost_tracking.py` for complete examples.
 
 ## 📖 How It Works
 
