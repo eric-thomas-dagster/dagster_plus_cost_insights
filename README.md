@@ -38,14 +38,30 @@ Track costs for **Dagster-triggered operations** across 18+ data sources:
 
 ### Installation
 
+**Option 1: From PyPI (Easiest - Coming Soon)**
 ```bash
 # Install base package
 pip install dagster-insights
 
+# With uv (recommended)
+uv add dagster-insights[databricks]
+
 # Install with specific integrations
 pip install dagster-insights[databricks]
-pip install dagster-insights[redshift,aws]
+pip install dagster-insights[redshift,dbt]
 pip install dagster-insights[all]  # Everything
+```
+
+**Option 2: From GitHub (Current)**
+```bash
+# Install from GitHub
+pip install git+https://github.com/eric-thomas-dagster/dagster_plus_cost_insights.git
+
+# With specific extras
+pip install "dagster-insights[databricks] @ git+https://github.com/eric-thomas-dagster/dagster_plus_cost_insights.git"
+
+# With uv
+uv add --git https://github.com/eric-thomas-dagster/dagster_plus_cost_insights dagster-insights
 ```
 
 ### Basic Usage
