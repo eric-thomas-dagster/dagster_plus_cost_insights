@@ -96,6 +96,7 @@ except ImportError:
 
 # PostgreSQL imports
 # PostgreSQL (psycopg2) is now a hard dependency, so always import the resource
+dagster_postgresql_req_imports = set()  # PostgreSQL is always available
 from dagster_insights.postgresql.insights_postgresql_resource import (
     InsightsPostgreSQLResource as InsightsPostgreSQLResource,
 )
