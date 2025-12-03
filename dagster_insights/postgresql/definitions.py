@@ -265,7 +265,7 @@ def create_postgresql_insights_asset_and_schedule(
                 )
                 put_cost_information(
                     context=context,
-                    metric_name="postgresql_cost",
+                    metric_name="snowflake_credits",  # TEMP: Testing if control plane recognizes this
                     cost_information=costs,
                     start=start_hour.timestamp(),
                     end=end_hour.timestamp(),
