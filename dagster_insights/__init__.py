@@ -95,19 +95,13 @@ except ImportError:
     pass
 
 # PostgreSQL imports
-dagster_postgresql_req_imports = {
-    "InsightsPostgreSQLResource",
-    "dbt_with_postgresql_insights",
-}
-try:
-    from dagster_insights.postgresql.dbt_wrapper import (
-        dbt_with_postgresql_insights as dbt_with_postgresql_insights,
-    )
-    from dagster_insights.postgresql.insights_postgresql_resource import (
-        InsightsPostgreSQLResource as InsightsPostgreSQLResource,
-    )
-except ImportError:
-    pass
+# PostgreSQL is now a hard dependency, no need for try/except
+from dagster_insights.postgresql.dbt_wrapper import (
+    dbt_with_postgresql_insights as dbt_with_postgresql_insights,
+)
+from dagster_insights.postgresql.insights_postgresql_resource import (
+    InsightsPostgreSQLResource as InsightsPostgreSQLResource,
+)
 
 # MySQL imports
 dagster_mysql_req_imports = {
