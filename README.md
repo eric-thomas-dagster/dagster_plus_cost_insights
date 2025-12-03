@@ -38,31 +38,48 @@ Track costs for **Dagster-triggered operations** across 18+ data sources:
 
 ### Installation
 
-**Option 1: From PyPI (Easiest - Coming Soon)**
+**Install directly from GitHub:**
+
 ```bash
-# Install base package
-pip install dagster-insights
-
-# With uv (recommended)
-uv add dagster-insights[databricks]
-
-# Install with specific integrations
-pip install dagster-insights[databricks]
-pip install dagster-insights[redshift,dbt]
-pip install dagster-insights[all]  # Everything
-```
-
-**Option 2: From GitHub (Current)**
-```bash
-# Install from GitHub
+# Basic installation
 pip install git+https://github.com/eric-thomas-dagster/dagster_plus_cost_insights.git
 
-# With specific extras
+# With specific integrations (recommended)
 pip install "dagster-insights[databricks] @ git+https://github.com/eric-thomas-dagster/dagster_plus_cost_insights.git"
+pip install "dagster-insights[redshift,dbt] @ git+https://github.com/eric-thomas-dagster/dagster_plus_cost_insights.git"
+pip install "dagster-insights[all] @ git+https://github.com/eric-thomas-dagster/dagster_plus_cost_insights.git"
 
-# With uv
-uv add --git https://github.com/eric-thomas-dagster/dagster_plus_cost_insights dagster-insights
+# With uv (faster!)
+uv add --git https://github.com/eric-thomas-dagster/dagster_plus_cost_insights dagster-insights --extra databricks
 ```
+
+**Add to your `requirements.txt`:**
+```
+dagster-insights[databricks] @ git+https://github.com/eric-thomas-dagster/dagster_plus_cost_insights.git
+```
+
+**Add to your `pyproject.toml`:**
+```toml
+[project]
+dependencies = [
+    "dagster-insights[databricks] @ git+https://github.com/eric-thomas-dagster/dagster_plus_cost_insights.git",
+]
+```
+
+**Available extras:**
+- `[databricks]` - Databricks integration
+- `[redshift]` - Amazon Redshift
+- `[postgresql]` - PostgreSQL
+- `[mysql]` - MySQL
+- `[trino]` - Trino/Presto
+- `[athena]` - AWS Athena
+- `[aws]` - All AWS services (S3, RDS, Glue, EMR, Athena)
+- `[azure-synapse]` - Azure Synapse Analytics
+- `[azure-sql]` - Azure SQL Database
+- `[gcs]` - Google Cloud Storage
+- `[cloud-sql]` - Google Cloud SQL
+- `[dbt]` - dbt integration support
+- `[all]` - Everything (includes all above)
 
 ### Basic Usage
 
