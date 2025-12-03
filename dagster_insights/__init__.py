@@ -95,13 +95,18 @@ except ImportError:
     pass
 
 # PostgreSQL imports
-# PostgreSQL is now a hard dependency, no need for try/except
-from dagster_insights.postgresql.dbt_wrapper import (
-    dbt_with_postgresql_insights as dbt_with_postgresql_insights,
-)
+# PostgreSQL (psycopg2) is now a hard dependency, so always import the resource
 from dagster_insights.postgresql.insights_postgresql_resource import (
     InsightsPostgreSQLResource as InsightsPostgreSQLResource,
 )
+
+# dbt wrapper is optional (requires dagster-dbt)
+try:
+    from dagster_insights.postgresql.dbt_wrapper import (
+        dbt_with_postgresql_insights as dbt_with_postgresql_insights,
+    )
+except ImportError:
+    pass
 
 # MySQL imports
 dagster_mysql_req_imports = {
