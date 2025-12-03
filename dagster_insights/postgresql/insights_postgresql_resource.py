@@ -17,11 +17,68 @@ from dagster_insights.insights_utils import get_current_context_and_asset_key
 OUTPUT_NON_ASSET_SIGIL = "__postgresql_query_metadata_"
 
 
+class WrappedPostgreSQLCursor:
+    """Wrapper around PostgreSQL cursor to track query execution metrics."""
+
+    def __init__(self, cursor, context, asset_key: Optional[AssetKey], connection_wrapper) -> None:
+        self._cursor = cursor
+        self._context = context
+        self._asset_key = asset_key
+        self._connection_wrapper = connection_wrapper
+
+    def execute(self, query: str, *args, **kwargs):
+        """Execute a query and track metrics."""
+        import time
+
+        # Tag the query with opaque ID
+        modified_query = meter_postgresql_query(
+            self._context, query, associated_asset_key=self._asset_key
+        )
+
+        # Execute and track execution time
+        start_time = time.time()
+        result = self._cursor.execute(modified_query, *args, **kwargs)
+        execution_time_ms = int((time.time() - start_time) * 1000)
+
+        # Store metrics in connection wrapper
+        self._connection_wrapper._execution_times_ms.append(execution_time_ms)
+        # Note: rows_processed would need to be extracted from cursor.rowcount if available
+        if self._cursor.rowcount >= 0:
+            self._connection_wrapper._rows_processed.append(self._cursor.rowcount)
+
+        return result
+
+    def fetchall(self):
+        """Fetch all results."""
+        return self._cursor.fetchall()
+
+    def fetchone(self):
+        """Fetch one result."""
+        return self._cursor.fetchone()
+
+    def fetchmany(self, size=None):
+        """Fetch many results."""
+        if size is None:
+            return self._cursor.fetchmany()
+        return self._cursor.fetchmany(size)
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        self._cursor.close()
+
+    def __getattr__(self, name):
+        """Delegate all other attributes to the underlying cursor."""
+        return getattr(self._cursor, name)
+
+
 class WrappedPostgreSQLConnection:
     """Wrapper around PostgreSQL connection to track query costs."""
 
-    def __init__(self, connection: PgConnection, asset_key: Optional[AssetKey] = None) -> None:
+    def __init__(self, connection: PgConnection, context, asset_key: Optional[AssetKey] = None) -> None:
         self._connection = connection
+        self._context = context
         self._asset_key = asset_key
         self._execution_times_ms = []
         self._rows_processed = []
@@ -30,32 +87,7 @@ class WrappedPostgreSQLConnection:
     def cursor(self, *args, **kwargs):
         """Get a cursor that tracks query execution."""
         cursor = self._connection.cursor(*args, **kwargs)
-        
-        # Wrap the cursor's execute method
-        original_execute = cursor.execute
-        
-        def tracked_execute(query, *args, **kwargs):
-            context, inferred_asset_key = get_current_context_and_asset_key()
-            if not context:
-                return original_execute(query, *args, **kwargs)
-
-            associated_asset_key = self._asset_key or inferred_asset_key
-            modified_query = meter_postgresql_query(
-                context, query, associated_asset_key=associated_asset_key
-            )
-            
-            import time
-            start_time = time.time()
-            result = original_execute(modified_query, *args, **kwargs)
-            execution_time_ms = int((time.time() - start_time) * 1000)
-            
-            self._execution_times_ms.append(execution_time_ms)
-            # Note: rows_processed would need to be extracted from result if available
-            
-            return result
-        
-        cursor.execute = tracked_execute
-        return cursor
+        return WrappedPostgreSQLCursor(cursor, self._context, self._asset_key, self)
 
     def commit(self):
         """Commit the transaction."""
@@ -170,6 +202,7 @@ class InsightsPostgreSQLResource:
         # Wrap it for cost tracking
         conn = WrappedPostgreSQLConnection(
             connection=pg_conn,
+            context=context,
             asset_key=associated_asset_key
         )
 
