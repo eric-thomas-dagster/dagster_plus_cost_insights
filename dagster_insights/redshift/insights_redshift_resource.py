@@ -17,20 +17,20 @@ from dagster_insights.insights_utils import get_current_context_and_asset_key
 OUTPUT_NON_ASSET_SIGIL = "__redshift_query_metadata_"
 
 
-class WrappedRedshiftConnection(PgConnection):
+class WrappedRedshiftConnection:
     """Wrapper around Redshift connection to track query costs."""
 
-    def __init__(self, *args, asset_key: Optional[AssetKey] = None, **kwargs) -> None:
+    def __init__(self, connection: PgConnection, asset_key: Optional[AssetKey] = None) -> None:
+        self._connection = connection
         self._asset_key = asset_key
         self._execution_times_ms = []
         self._bytes_scanned = []
         self._rows_processed = []
         self._query_ids = []
-        super().__init__(*args, **kwargs)
 
     def cursor(self, *args, **kwargs):
         """Get a cursor that tracks query execution."""
-        cursor = super().cursor(*args, **kwargs)
+        cursor = self._connection.cursor(*args, **kwargs)
         
         # Wrap the cursor's execute method
         original_execute = cursor.execute
@@ -58,6 +58,30 @@ class WrappedRedshiftConnection(PgConnection):
         
         cursor.execute = tracked_execute
         return cursor
+
+    def commit(self):
+        """Commit the transaction."""
+        return self._connection.commit()
+
+    def rollback(self):
+        """Rollback the transaction."""
+        return self._connection.rollback()
+
+    def close(self):
+        """Close the connection."""
+        return self._connection.close()
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        if exc_type:
+            self.rollback()
+        self.close()
+
+    def __getattr__(self, name):
+        """Delegate all other attributes to the underlying connection."""
+        return getattr(self._connection, name)
 
 
 class WrappedRedshiftCursor:
@@ -171,27 +195,32 @@ class InsightsRedshiftResource:
 
         associated_asset_key = asset_key or inferred_asset_key
 
+        # Create actual psycopg2 connection
+        pg_conn = psycopg2.connect(**self.connection_params)
+
+        # Wrap it for cost tracking
         conn = WrappedRedshiftConnection(
-            asset_key=associated_asset_key, **self.connection_params
+            connection=pg_conn,
+            asset_key=associated_asset_key
         )
 
         try:
             yield conn
             conn.commit()
-            
+
             # Emit cost observations after all queries
             if conn._execution_times_ms:
-                if not asset_key:
-                    asset_key = marker_asset_key_for_job(context.job_def)
-                
+                if not associated_asset_key:
+                    associated_asset_key = marker_asset_key_for_job(context.job_def)
+
                 total_execution_time_ms = sum(conn._execution_times_ms)
                 total_bytes_scanned = sum(conn._bytes_scanned) if conn._bytes_scanned else 0
                 total_rows_processed = sum(conn._rows_processed) if conn._rows_processed else 0
-                
+
                 if total_execution_time_ms > 0:
                     context.log_event(
                         AssetObservation(
-                            asset_key=asset_key,
+                            asset_key=associated_asset_key,
                             metadata=build_redshift_cost_metadata(
                                 conn._query_ids,
                                 total_execution_time_ms,
