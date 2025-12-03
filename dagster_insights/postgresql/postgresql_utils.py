@@ -26,16 +26,39 @@ def build_opaque_id_metadata(opaque_id: str) -> dict:
     return {f"{OPAQUE_ID_METADATA_KEY_PREFIX}{opaque_id}": True}
 
 
+def extract_opaque_id_from_query(query: str) -> Optional[str]:
+    """Extract the opaque ID from a query comment."""
+    import re
+
+    pattern = rf"{OPAQUE_ID_SQL_SIGIL}\[\[\[(.*?)\]\]\]"
+    match = re.search(pattern, query)
+    if match:
+        return match.group(1)
+    return None
+
+
 def meter_postgresql_query(
     context: Union[OpExecutionContext, AssetExecutionContext],
     sql: str,
     comment_factory=lambda comment: f"\n-- {comment}\n",
     opaque_id=None,
     associated_asset_key: Optional[AssetKey] = None,
+    return_opaque_id: bool = False,
 ):
     """A utility function that takes a SQL query and returns a modified version of the query
     that includes a comment that will be used to identify the query when attributing cost.
     Logs an AssetObservation event to associate the query with the executing op/asset.
+
+    Args:
+        context: The execution context
+        sql: The SQL query to tag
+        comment_factory: Function to format the comment
+        opaque_id: Optional opaque ID (will be generated if not provided)
+        associated_asset_key: Optional asset key to associate with the query
+        return_opaque_id: If True, returns tuple of (modified_sql, opaque_id) instead of just modified_sql
+
+    Returns:
+        Modified SQL query with opaque ID comment, or tuple of (modified_sql, opaque_id) if return_opaque_id=True
     """
     if context.has_assets_def and len(context.assets_def.keys_by_output_name.keys()) == 1:
         inferred_asset_key = context.asset_key
@@ -87,6 +110,8 @@ def meter_postgresql_query(
             )
         )
 
+    if return_opaque_id:
+        return modified_sql, opaque_id
     return modified_sql
 
 

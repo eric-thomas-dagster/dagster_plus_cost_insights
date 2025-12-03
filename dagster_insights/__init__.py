@@ -100,6 +100,14 @@ from dagster_insights.postgresql.insights_postgresql_resource import (
     InsightsPostgreSQLResource as InsightsPostgreSQLResource,
 )
 
+# PostgreSQL cost tracking (requires dagster-cloud)
+try:
+    from dagster_insights.postgresql.definitions import (
+        create_postgresql_insights_asset_and_schedule as create_postgresql_insights_asset_and_schedule,
+    )
+except ImportError:
+    pass
+
 # dbt wrapper is optional (requires dagster-dbt)
 try:
     from dagster_insights.postgresql.dbt_wrapper import (

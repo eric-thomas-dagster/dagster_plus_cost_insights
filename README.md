@@ -153,6 +153,53 @@ defs = Definitions(
 )
 ```
 
+### Database Cost Tracking (PostgreSQL, RDS, Cloud SQL, Azure Database)
+
+For databases that don't have built-in cost tracking (unlike Snowflake/BigQuery), use scheduled cost ingestion:
+
+```python
+from dagster import Definitions, EnvVar
+from dagster_insights import (
+    InsightsPostgreSQLResource,
+    create_postgresql_insights_asset_and_schedule,
+)
+
+# Create scheduled cost tracking asset
+# Cost is calculated as: (execution_time_ms / 3,600,000) * hourly_cost
+postgres_insights = create_postgresql_insights_asset_and_schedule(
+    start_date="2025-01-01",
+    hourly_cost=0.068,  # AWS RDS db.t3.medium = $0.068/hour
+)
+
+defs = Definitions(
+    assets=[*your_assets, *postgres_insights.assets],
+    schedules=[postgres_insights.schedule],
+    resources={
+        "postgres": InsightsPostgreSQLResource(
+            host=EnvVar("POSTGRES_HOST"),
+            database=EnvVar("POSTGRES_DB"),
+            user=EnvVar("POSTGRES_USER"),
+            password=EnvVar("POSTGRES_PASSWORD"),
+            enable_cost_tracking=True,  # Required for cost tracking!
+        )
+    },
+)
+```
+
+**How it works:**
+1. Queries are tagged with opaque IDs and tracked in a `dagster_insights_query_tracking` table
+2. A scheduled asset runs hourly to poll this tracking table
+3. Costs are calculated based on execution time × your instance's hourly cost
+4. Data is submitted to Dagster+ Insights API via `put_cost_information()`
+
+**Finding your hourly cost:**
+- **AWS RDS:** [RDS Pricing](https://aws.amazon.com/rds/pricing/) (e.g., db.t3.medium = $0.068/hour)
+- **GCP Cloud SQL:** [Cloud SQL Pricing](https://cloud.google.com/sql/pricing) (e.g., db-n1-standard-1 = $0.096/hour)
+- **Azure Database:** [Azure Database Pricing](https://azure.microsoft.com/en-us/pricing/details/postgresql/) (e.g., GP_Gen5_2 = $0.228/hour)
+- **Self-hosted:** Monthly infrastructure cost ÷ 730 hours
+
+See `examples/postgresql_cost_tracking.py` for a complete example with multiple databases.
+
 ## 📖 How It Works
 
 ### Cost Attribution Flow
