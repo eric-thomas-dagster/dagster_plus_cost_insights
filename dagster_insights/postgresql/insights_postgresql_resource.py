@@ -17,19 +17,19 @@ from dagster_insights.insights_utils import get_current_context_and_asset_key
 OUTPUT_NON_ASSET_SIGIL = "__postgresql_query_metadata_"
 
 
-class WrappedPostgreSQLConnection(PgConnection):
+class WrappedPostgreSQLConnection:
     """Wrapper around PostgreSQL connection to track query costs."""
 
-    def __init__(self, *args, asset_key: Optional[AssetKey] = None, **kwargs) -> None:
+    def __init__(self, connection: PgConnection, asset_key: Optional[AssetKey] = None) -> None:
+        self._connection = connection
         self._asset_key = asset_key
         self._execution_times_ms = []
         self._rows_processed = []
         self._query_ids = []
-        super().__init__(*args, **kwargs)
 
     def cursor(self, *args, **kwargs):
         """Get a cursor that tracks query execution."""
-        cursor = super().cursor(*args, **kwargs)
+        cursor = self._connection.cursor(*args, **kwargs)
         
         # Wrap the cursor's execute method
         original_execute = cursor.execute
@@ -56,6 +56,30 @@ class WrappedPostgreSQLConnection(PgConnection):
         
         cursor.execute = tracked_execute
         return cursor
+
+    def commit(self):
+        """Commit the transaction."""
+        return self._connection.commit()
+
+    def rollback(self):
+        """Rollback the transaction."""
+        return self._connection.rollback()
+
+    def close(self):
+        """Close the connection."""
+        return self._connection.close()
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        if exc_type:
+            self.rollback()
+        self.close()
+
+    def __getattr__(self, name):
+        """Delegate all other attributes to the underlying connection."""
+        return getattr(self._connection, name)
 
 
 @beta
@@ -140,8 +164,13 @@ class InsightsPostgreSQLResource:
 
         associated_asset_key = asset_key or inferred_asset_key
 
+        # Create actual psycopg2 connection
+        pg_conn = psycopg2.connect(**self.connection_params)
+
+        # Wrap it for cost tracking
         conn = WrappedPostgreSQLConnection(
-            asset_key=associated_asset_key, **self.connection_params
+            connection=pg_conn,
+            asset_key=associated_asset_key
         )
 
         try:
