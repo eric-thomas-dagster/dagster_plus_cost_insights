@@ -102,16 +102,13 @@ from dagster_insights.postgresql.insights_postgresql_resource import (
 )
 
 # PostgreSQL cost tracking (requires dagster-cloud)
-try:
-    from dagster_insights.postgresql.definitions import (
-        create_postgresql_insights_asset_and_schedule as create_postgresql_insights_asset_and_schedule,
-    )
-    from dagster_insights.postgresql.neon import (
-        create_neon_insights_asset_and_schedule as create_neon_insights_asset_and_schedule,
-        calculate_neon_hourly_cost as calculate_neon_hourly_cost,
-    )
-except ImportError:
-    pass
+from dagster_insights.postgresql.definitions import (
+    create_postgresql_insights_asset_and_schedule as create_postgresql_insights_asset_and_schedule,
+)
+from dagster_insights.postgresql.neon import (
+    create_neon_insights_asset_and_schedule as create_neon_insights_asset_and_schedule,
+    calculate_neon_hourly_cost as calculate_neon_hourly_cost,
+)
 
 # dbt wrapper is optional (requires dagster-dbt)
 try:
